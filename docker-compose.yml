@@ -1,0 +1,41 @@
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: joomla_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: joomla
+      MYSQL_USER: joomla
+      MYSQL_PASSWORD: joomla
+    volumes:
+      - db_data:/var/lib/mysql
+
+  joomla:
+    image: joomla:latest
+    container_name: joomla_app
+    restart: always
+    depends_on:
+      - db
+    environment:
+      JOOMLA_DB_HOST: db
+      JOOMLA_DB_USER: joomla
+      JOOMLA_DB_PASSWORD: joomla
+      JOOMLA_DB_NAME: joomla
+
+  nginx:
+    image: nginx:latest
+    container_name: joomla_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/certs/server.crt:/etc/nginx/certs/server.crt
+      - ./nginx/certs/server.key:/etc/nginx/certs/server.key
+    depends_on:
+      - joomla
+
+volumes:
+  db_data:
